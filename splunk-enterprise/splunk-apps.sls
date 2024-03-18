@@ -54,7 +54,7 @@ override-{{ deploy_type }}-{{ deploy_title }}:
     - file_mode: '0640'
     - include_empty: true
     - require:
-      - file: deploy-{{ deploy_type }}-{{ deploy_title }} 
+      - file: deploy-{{ deploy_type }}-{{ deploy_title }}
     - onchanges_in:
       - file: file-create-reload-status-{{ deploy_type }}-{{ deploy_title }}
 {% endif %}
@@ -70,7 +70,7 @@ add-{{ deploy_type }}-version-file-{{ app_dir | replace("_", "-") }}:
         [app]
         version = {{ app_ver }}
     - onchanges:
-      - file: deploy-{{ deploy_type }}-{{ deploy_title }} 
+      - file: deploy-{{ deploy_type }}-{{ deploy_title }}
 
 # Find .sh files and make sure they are executable
 command-set-executable-scripts-{{ deploy_type }}-{{ deploy_title }}:
@@ -78,7 +78,7 @@ command-set-executable-scripts-{{ deploy_type }}-{{ deploy_title }}:
     - name: find {{ deploy_path }}/{{ app_dir }}/ -type f -name *.sh -exec chmod 750 {} \;
     - runas: splunk
     - onchanges:
-      - file: deploy-{{ deploy_type }}-{{ deploy_title }} 
+      - file: deploy-{{ deploy_type }}-{{ deploy_title }}
 
 # Create reload status file
 file-create-reload-status-{{ deploy_type }}-{{ deploy_title }}:
@@ -86,7 +86,7 @@ file-create-reload-status-{{ deploy_type }}-{{ deploy_title }}:
     - name: {{ reload_path }}/.reload
     - runas: splunk
     - onchanges:
-      - file: deploy-{{ deploy_type }}-{{ deploy_title }} 
+      - file: deploy-{{ deploy_type }}-{{ deploy_title }}
     - unless: |
         test -f {{ reload_path }}/.reload && exit 0
 
@@ -112,7 +112,7 @@ file-create-reload-status-{{ deploy_type }}-{{ deploy_title }}:
     - name: {{ reload_path }}/.reload
     - runas: splunk
     - onchanges:
-      - file: remove-{{ deploy_type }}-{{ deploy_title }} 
+      - file: remove-{{ deploy_type }}-{{ deploy_title }}
     - unless: |
         test -f {{ reload_path }}/.reload && exit 0
 

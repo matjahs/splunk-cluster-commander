@@ -15,7 +15,7 @@
         # Managed by Salt do not edit
         [main]
         include=throughput-performance
-        
+
         [vm]
         transparent_hugepages=never
 
@@ -44,7 +44,7 @@ sysctl-set-swappiness:
     - value: {{ config.kernel.vm_swappiness }}
     - config: /etc/sysctl.d/10-Splunk_KernelOverride.conf
     - require:
-      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf 
+      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf
 
 # Set kernel override for vm.max_map_count
 sysctl-set-max-map-count:
@@ -53,7 +53,7 @@ sysctl-set-max-map-count:
     - value: {{ config.kernel.vm_max_map_count }}
     - config: /etc/sysctl.d/10-Splunk_KernelOverride.conf
     - require:
-      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf 
+      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf
 
 # Set kernel override for ipv6 all
 sysctl-set-ipv6-all-disable-ipv6:
@@ -62,7 +62,7 @@ sysctl-set-ipv6-all-disable-ipv6:
     - value: 1
     - config: /etc/sysctl.d/10-Splunk_KernelOverride.conf
     - require:
-      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf 
+      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf
 
 # Set kernel override for ipv6 default
 sysctl-set-ipv6-default-disable-ipv6:
@@ -71,7 +71,7 @@ sysctl-set-ipv6-default-disable-ipv6:
     - value: 1
     - config: /etc/sysctl.d/10-Splunk_KernelOverride.conf
     - require:
-      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf 
+      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf
 
 # Set kernel override for ipv6 lo
 sysctl-set-ipv6-lo-disable-ipv6:
@@ -80,7 +80,7 @@ sysctl-set-ipv6-lo-disable-ipv6:
     - value: 1
     - config: /etc/sysctl.d/10-Splunk_KernelOverride.conf
     - require:
-      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf 
+      - file: /etc/sysctl.d/10-Splunk_KernelOverride.conf
 
 # Set resource limits for the splunk user
 /etc/security/limits.d/90-splunk.conf:

@@ -38,7 +38,7 @@ orch-state-update-os-{{ node }}:
 orch-function-reboot-after-update-{{ node }}:
   salt.function:
     - name: system.reboot
-    - arg: [1] # waits 1 minute 
+    - arg: [1] # waits 1 minute
     - tgt: {{ node }}
     - onchanges:
       - salt: orch-state-update-os-{{ node }}

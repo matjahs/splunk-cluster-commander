@@ -14,13 +14,13 @@
         DefaultDependencies=no
         After=sysinit.target local-fs.target
         Before=Splunkd.service
-        
+
         [Service]
         Type=oneshot
         ExecStart=/bin/sh -c "echo 'never' > /sys/kernel/mm/transparent_hugepage/enabled"
         ExecStart=/bin/sh -c "echo 'never' > /sys/kernel/mm/transparent_hugepage/defrag"
         RemainAfterExit=yes
-        
+
         [Install]
         WantedBy=basic.target
 
