@@ -188,7 +188,7 @@
     }
   }
 } %}
-{% set firewall = os_lookup.get(grains.os_family, {}) %} 
+{% set firewall = os_lookup.get(grains.os_family, {}) %}
 
 # Package settings for os_family
 # base_url https://download.splunk.com/products/splunk/releases/version/platform/package_file
@@ -204,7 +204,8 @@
       'file_name': 'splunk-8.2.1-ddff1c41e5cf-linux-2.6-x86_64.rpm',
       'version': '8.2.1',
       'platform': 'linux',
-      'base_url': 'https://download.splunk.com/products/splunk/releases'
+      'base_url': 'https://download.splunk.com/products/splunk/releases',
+      'openssl_pkg_name': 'python3-pyOpenSSL'
     }
   },
   'Debian':
@@ -218,11 +219,12 @@
       'file_name': 'splunk-8.2.1-ddff1c41e5cf-linux-2.6-amd64.deb',
       'version': '8.2.1',
       'platform': 'linux',
-      'base_url': 'https://download.splunk.com/products/splunk/releases'
+      'base_url': 'https://download.splunk.com/products/splunk/releases',
+          'openssl_pkg_name': 'python3-openssl'
     }
   }
 } %}
-{% set os_map = os_lookup.get(grains.os_family, {}) %} 
+{% set os_map = os_lookup.get(grains.os_family, {}) %}
 
 # Update the default config with kernel and firewall config
 {% do default_config.update(kernel) %}

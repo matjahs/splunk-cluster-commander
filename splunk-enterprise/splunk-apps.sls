@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
+include:
+  - splunk-enterprise.splunk-package
 
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 

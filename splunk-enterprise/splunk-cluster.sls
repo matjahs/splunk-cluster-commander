@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
-
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 
 ###########################################
@@ -13,7 +12,7 @@
 # Default content length is 2147483648 bytes (2GB)
 ini-add-splunk-httpserver-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -21,8 +20,6 @@ ini-add-splunk-httpserver-section:
           max_content_length: '{{ config.splunk.httpserver_max_content_length }}'
     - onchanges_in:
       - grains: grains-set-restart-status
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 
 {% endif %}
 
@@ -32,7 +29,7 @@ ini-add-splunk-httpserver-section:
 # Add info for license master in the license section
 ini-add-splunk-license-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -47,7 +44,7 @@ ini-add-splunk-license-section:
 {% if config.splunk.server_role not in [ 'standalone', 'indexer' ] %}
 
 # Manage /opt/splunk/etc/system/local/outputs.conf
-{{ config.splunk.base_dir }}/etc/system/local/outputs.conf:
+/opt/splunk/etc/system/local/outputs.conf:
   file.managed:
     - source: salt://splunk-enterprise/files/outputs.conf.jinja
     - template: jinja
@@ -67,7 +64,7 @@ ini-add-splunk-license-section:
 {% if config.splunk.server_role not in [ 'standalone', 'indexer', 'deployment-server' ] %}
 
 # Manage /opt/splunk/etc/system/local/deploymentclient.conf
-{{ config.splunk.base_dir }}/etc/system/local/deploymentclient.conf:
+/opt/splunk/etc/system/local/deploymentclient.conf:
   file.managed:
     - source: salt://splunk-enterprise/files/deploymentclient.conf.jinja
     - template: jinja
@@ -90,7 +87,7 @@ ini-add-splunk-license-section:
 # Bundle replication size default is 2048
 ini-add-splunk-replicationSettings-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/distsearch.conf
+    - name: /opt/splunk/etc/system/local/distsearch.conf
     - separator: '='
     - strict: False
     - sections:
@@ -98,13 +95,13 @@ ini-add-splunk-replicationSettings-section:
           maxBundleSize: '{{ config.splunk.distsearch_maxBundleSize }}'
     - onchanges_in:
       - grains: grains-set-restart-status
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/distsearch.conf
+    - onlyif:
+      - test -f /opt/splunk/etc/system/local/distsearch.conf
 
 # Add info for search heads in the clustering section
 ini-add-splunk-search-head-cluster-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -117,18 +114,16 @@ ini-add-splunk-search-head-cluster-section:
           master_uri: 'https://{{ config.splunk.splunk_cm_uri }}:{{ config.splunk.splunk_mgmt_port }}'
           multisite: '{{ config.splunk.cluster.multisite }}'
     - unless:
-      - grep '{{ config.splunk.shcluster.pass4SymmKey | sha256 }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.shcluster.pass4SymmKey | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
     - onchanges_in:
       - grains: grains-set-restart-status
     - watch_in:
-      - file: comment-sh-clustering-pass4SymmKeyCheck-value
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+      - file: /opt/splunk/etc/system/local/server.conf
 
 # Comment out the pass4SymmKey hash check line
 comment-sh-clustering-pass4SymmKeyCheck-value:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - pattern: |
@@ -137,27 +132,24 @@ comment-sh-clustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.cluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.cluster.pass4SymmKey | sha256 }}
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+
 # Add replication port to end of file
 add-sh-clustering-replication-port:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - append_if_not_found: True
     - pattern: |
         ^[replication_port.*]$
     - repl: |
-
         [replication_port://{{ config.splunk.shcluster.replication_port }}]
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+
 {% if config.splunk.shcluster.use_shcluster == 'True' %}
 # Add info for search heads in the shclustering section
 ini-add-splunk-search-head-shcluster-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -170,18 +162,17 @@ ini-add-splunk-search-head-shcluster-section:
           replication_factor: '{{ config.splunk.shcluster.replication_factor }}'
           disabled: '0'
     - unless:
-      - grep '{{ config.splunk.shcluster.pass4SymmKey | sha256 }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
-      - grep '{{ config.splunk.splunk_ds_uri }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.shcluster.pass4SymmKey | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.splunk_ds_uri }}' /opt/splunk/etc/system/local/server.conf && exit 0
     - onchanges_in:
       - grains: grains-set-restart-status
     - watch_in:
       - file: comment-sh-shclustering-pass4SymmKeyCheck-value
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+
 # Comment out the pass4SymmKey hash check line
 comment-sh-shclustering-pass4SymmKeyCheck-value:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - pattern: |
@@ -190,8 +181,6 @@ comment-sh-shclustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.shcluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.shcluster.pass4SymmKey | sha256 }}
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% endif %}
 {% endif %}
 
@@ -205,7 +194,7 @@ comment-sh-shclustering-pass4SymmKeyCheck-value:
 # Add info for indexer in the general section, and clustering section
 ini-add-splunk-indexer-sections:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -217,18 +206,17 @@ ini-add-splunk-indexer-sections:
           pass4SymmKey: 'REPLACE_ME'
           pass4SymmKeyCheck: 'REPLACE_ME'
     - unless:
-      - grep '{{ config.splunk.splunk_cm_uri }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
-      - grep '{{ config.splunk.cluster.pass4SymmKey | sha256 }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.splunk_cm_uri }}' /opt/splunk/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.cluster.pass4SymmKey | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
     - onchanges_in:
       - grains: grains-set-restart-status
     - watch_in:
-      - file: comment-idx-clustering-pass4SymmKeyCheck-value
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+      - file: /opt/splunk/etc/system/local/server.conf
+
 # Comment out the pass4SymmKey hash check line
 comment-idx-clustering-pass4SymmKeyCheck-value:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - pattern: |
@@ -237,12 +225,11 @@ comment-idx-clustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.cluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.cluster.pass4SymmKey | sha256 }}
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+
 # Add replication port to end of file
 add-idx-clustering-replication-port:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - append_if_not_found: True
@@ -251,8 +238,7 @@ add-idx-clustering-replication-port:
     - repl: |
 
         [replication_port://{{ config.splunk.cluster.replication_port }}]
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+
 {% endif %}
 
 ###########################################
@@ -263,7 +249,7 @@ add-idx-clustering-replication-port:
 {% if config.splunk.server_role in [ 'cluster-master' ] %}
 
 # Manage /opt/splunk/etc/apps/org_cm_base/local/server.conf in app/local
-{{ config.splunk.base_dir }}/etc/apps/org_cm_base/local/server.conf:
+/opt/splunk/etc/apps/org_cm_base/local/server.conf:
   file.managed:
     - makedirs: True
     - show_changes: False
@@ -278,14 +264,14 @@ add-idx-clustering-replication-port:
         indexerWeightByDiskCapacity = true
     - unless: >-
         grep '{{ config.splunk.cluster.pass4SymmKey | sha256 }}'
-        {{ config.splunk.base_dir }}/etc/apps/org_cm_base/local/server.conf && exit 0
+        /opt/splunk/etc/apps/org_cm_base/local/server.conf && exit 0
     - onchanges_in:
       - grains: grains-set-restart-status
 
 # Add info for the clustering section on the cluster master
 ini-add-splunk-cm-clustering-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -301,17 +287,16 @@ ini-add-splunk-cm-clustering-section:
           site_search_factor: '{{ config.splunk.cluster.site_search_factor }}'
           restart_timeout: '{{ config.splunk.cluster.restart_timeout }}'
     - unless:
-      - grep '{{ config.splunk.cluster.pass4SymmKey | sha256 }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.cluster.pass4SymmKey | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
     - onchanges_in:
       - grains: grains-set-restart-status
     - watch_in:
-      - file: comment-cm-clustering-pass4SymmKeyCheck-value
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+      - file: /opt/splunk/etc/system/local/server.conf
+
 # Comment out the pass4SymmKey hash check line
 comment-cm-clustering-pass4SymmKeyCheck-value:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - pattern: |
@@ -320,8 +305,6 @@ comment-cm-clustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.cluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.cluster.pass4SymmKey | sha256 }}
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% endif %}
 
 ###########################################
@@ -332,7 +315,7 @@ comment-cm-clustering-pass4SymmKeyCheck-value:
 {% if config.splunk.server_role in [ 'deployment-server' ] %}
 
 # Manage /opt/splunk/etc/system/local/serverclass.conf
-{{ config.splunk.base_dir }}/etc/system/local/serverclass.conf:
+/opt/splunk/etc/system/local/serverclass.conf:
   file.managed:
     - makedirs: True
     - replace: False
@@ -344,7 +327,7 @@ comment-cm-clustering-pass4SymmKeyCheck-value:
 # Add info for the deployer shclustering section on the deployment-server
 ini-add-splunk-ds-deployer-shcluster-section:
   ini.options_present:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
     - strict: False
     - sections:
@@ -353,17 +336,16 @@ ini-add-splunk-ds-deployer-shcluster-section:
           pass4SymmKeyCheck: 'REPLACE_ME'
           shcluster_label: '{{ config.splunk.shcluster.label }}'
     - unless:
-      - grep '{{ config.splunk.shcluster.pass4SymmKey | sha256 }}' {{ config.splunk.base_dir }}/etc/system/local/server.conf && exit 0
+      - grep '{{ config.splunk.shcluster.pass4SymmKey | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
     - onchanges_in:
       - grains: grains-set-restart-status
     - watch_in:
-      - file: comment-ds-deployer-pass4SymmKeyCheck-value
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+      - file: /opt/splunk/etc/system/local/server.conf
+
 # Comment out the pass4SymmKeyCheck hash check line
 comment-ds-deployer-pass4SymmKeyCheck-value:
   file.replace:
-    - name: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+    - name: /opt/splunk/etc/system/local/server.conf
     - show_changes: False
     - backup: False
     - pattern: |
@@ -372,8 +354,7 @@ comment-ds-deployer-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.shcluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.shcluster.pass4SymmKey | sha256 }}
-    - require:
-      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
+
 {% endif %}
 {% endif %}
 

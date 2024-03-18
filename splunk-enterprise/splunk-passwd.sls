@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
-
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 
 # Reset Splunk admin password if changed
@@ -16,7 +15,6 @@ command-update-splunk-admin-pass:
     - output_loglevel: quiet
     - runas: splunk
     - require:
-      - pkg: package-install-splunk
       - service: service-splunk
     - unless: >-
         grep $(python3 -c "import crypt; print(crypt.crypt('{{ config.splunk.current_admin_pass }}',

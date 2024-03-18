@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
-
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 
 # Only deploy to license master or a standard instance
@@ -9,13 +8,11 @@
 # Manage /opt/splunk/etc/licenses/enterprise/Splunk.License.lic
 /opt/splunk/etc/licenses/enterprise/{{ config.splunk.license_file }}:
   file.managed:
-    - source: salt://splunk-enterprise/files/{{ config.splunk.license_file }}
+    - source: salt://files/Splunk.License
     - makedirs: True
     - user: splunk
     - group: splunk
     - mode: '0640'
-    - onchanges_in:
-      - grains: grains-set-restart-status
 
 {% endif %}
 
@@ -50,8 +47,8 @@
       - grep '{{ config.splunk.pass4SymmKey | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
       - grep '{{ config.splunk.ssl.password | sha256 }}' /opt/splunk/etc/system/local/server.conf && exit 0
 
-# Manage /opt/splunk/etc/system/local/server.conf
-ini-add-general-section:
+# Add ini section data to /opt/splunk/etc/system/local/server.conf
+server-conf-ini:
   ini.options_present:
     - name: /opt/splunk/etc/system/local/server.conf
     - separator: '='
@@ -74,9 +71,6 @@ ini-add-general-section:
       - grains: grains-set-restart-status
       - service: service-splunk
     - watch_in:
-      - file: comment-general-pass4SymmKeyCheck-value
-      - file: comment-general-sslPasswordCheck-value
-    - require:
       - file: /opt/splunk/etc/system/local/server.conf
 
 # Comment out the pass4SymmKey hash check line
@@ -91,8 +85,7 @@ comment-general-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.pass4SymmKey | sha256 }}
-    - require:
-      - file: /opt/splunk/etc/system/local/server.conf
+    - onlyif: test -f /opt/splunk/etc/system/local/server.conf
 
 # Comment out the sslPassword hash check line
 comment-general-sslPasswordCheck-value:
@@ -106,8 +99,7 @@ comment-general-sslPasswordCheck-value:
     - repl: |
         sslPassword = {{ config.splunk.ssl.password }}
         #sslPasswordCheck = {{ config.splunk.ssl.password | sha256 }}
-    - require:
-      - file: /opt/splunk/etc/system/local/server.conf
+    - onlyif: test -f /opt/splunk/etc/system/local/server.conf
 
 # Sets up the configuration for all instance types
 # Manage /opt/splunk/etc/system/local/web.conf

@@ -6,8 +6,8 @@
 include:
   - .disable-thp
   - .splunk-kernel
-  - .splunk-package
   - .splunk-user
+  - .splunk-package
   - .splunk-config
   - .splunk-cluster
   - .{{ config.firewall.firewall_include }}

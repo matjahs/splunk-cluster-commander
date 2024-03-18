@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
-
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 
 # Setup enable boot start for systemd based systems
@@ -11,16 +10,13 @@ command-enable-splunk-boot-start:
     - watch_in:
       - service: service-splunk
       - cmd: command-restart-splunk
-    - require:
-      - pkg: package-install-splunk
+
 # Set user and group on the entire install location
 command-set-default-perms:
   cmd.run:
     - name: >-
         chmod -R o-rwx {{ config.splunk.base_dir }} &&
         chown -R splunk:splunk {{ config.splunk.base_dir }}
-    - require:
-      - cmd: command-enable-splunk-boot-start
 
 # Set default acl for splunk on /var/log
 command-set-default-acl-/var/log:
@@ -43,7 +39,10 @@ grains-set-restart-status:
     - name: splunk:needs_restart
     - value: True
     - onchanges:
+      - user: user-manage-splunk
       - cmd: command-enable-splunk-boot-start
+      - cmd: command-set-default-perms
+      - cmd: command-set-default-acl-/var/log
 
 # Make sure splunk service is enabled
 service-splunk:
@@ -57,13 +56,12 @@ command-restart-splunk:
   cmd.run:
     - name: systemctl restart Splunkd.service
     - refresh: True
+    - onlyif: salt-call grains.get splunk:needs_restart
   {% if config.splunk.restart_service_after_state_change == 'True' %}
     - onchanges:
       - service: service-splunk
       - grains: grains-set-restart-status
   {% endif %}
-    - require:
-      - pkg: package-install-splunk
 
 # Clear restart status grain after splunk restart
 grains-clear-restart-status:

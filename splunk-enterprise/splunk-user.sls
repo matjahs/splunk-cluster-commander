@@ -1,9 +1,5 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
-
-include:
-  - .splunk-service.sls
-
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 
 # Configure additional settings for the splunk user
@@ -17,8 +13,15 @@ user-manage-splunk:
     - optional_groups:
       - adm
       - syslog
+
+/opt/splunk:
+  file.directory:
+    - user: splunk
+    - group: splunk
+    - mode: '0750'
+    - makedirs: True
     - require:
-      - pkg: package-install-splunk
+      - user: user-manage-splunk
 
 # Add sudoers config to allow service restarts as splunk user
 /etc/sudoers.d/splunk:
@@ -44,8 +47,6 @@ user-manage-splunk:
         USERNAME = {{ config.splunk.admin_user }}
         PASSWORD = {{ config.splunk.current_admin_pass }}
     - output_loglevel: quiet
-    - require:
-      - pkg: package-install-splunk
     - onchanges_in:
       - grains: grains-set-restart-status
       - cmd: command-restart-splunk
