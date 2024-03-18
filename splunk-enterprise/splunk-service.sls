@@ -6,12 +6,13 @@
 # Setup enable boot start for systemd based systems
 command-enable-splunk-boot-start:
   cmd.run:
-    - name: {{ config.splunk.base_dir }}/bin/splunk enable boot-start -user splunk -systemd-managed 1 --no-prompt --accept-license
+    - name: {{ config.splunk.base_dir }}/bin/splunk enable boot-start -user splunk -group splunk -systemd-managed 1 --no-prompt --accept-license
     - creates: /etc/systemd/system/Splunkd.service
     - watch_in:
       - service: service-splunk
       - cmd: command-restart-splunk
-
+    - require:
+      - pkg: package-install-splunk
 # Set user and group on the entire install location
 command-set-default-perms:
   cmd.run:
@@ -26,6 +27,8 @@ command-set-default-acl-/var/log:
   cmd.run:
     - name: setfacl -Rm u:splunk:rX,d:u:splunk:rX /var/log
     - unless: getfacl /var/log |grep splunk
+    - require:
+      - user: user-manage-splunk
 
 # Always clean restart status to get latest value set
 {% if salt['grains.get']('splunk:needs_restart') == True %}
@@ -59,6 +62,8 @@ command-restart-splunk:
       - service: service-splunk
       - grains: grains-set-restart-status
   {% endif %}
+    - require:
+      - pkg: package-install-splunk
 
 # Clear restart status grain after splunk restart
 grains-clear-restart-status:

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim: ft=sls
 
+include:
+  - .splunk-service.sls
+
 {% from "splunk-enterprise/map.jinja" import host_lookup as config with context %}
 
 # Configure additional settings for the splunk user
@@ -8,7 +11,7 @@ user-manage-splunk:
   user.present:
     - name: splunk
     - shell: /bin/bash
-    - home: {{ config.splunk.base_dir }}
+    - home: /opt/splunk
     - createhome: False
     - usergroup: True
     - optional_groups:
@@ -31,7 +34,7 @@ user-manage-splunk:
       - user: user-manage-splunk
 
 # Configure the initial password using a seed file
-{{ config.splunk.base_dir }}/etc/system/local/user-seed.conf:
+/opt/splunk/etc/system/local/user-seed.conf:
   file.managed:
     - user: splunk
     - group: splunk
@@ -47,6 +50,6 @@ user-manage-splunk:
       - grains: grains-set-restart-status
       - cmd: command-restart-splunk
     - onlyif:
-      - test ! -f {{ config.splunk.base_dir }}/etc/system/local/user-seed.conf && exit 0
-      - test ! -f {{ config.splunk.base_dir }}/etc/passwd && exit 0
+      - test ! -f /opt/splunk/etc/system/local/user-seed.conf && exit 0
+      - test ! -f /opt/splunk/etc/passwd && exit 0
 
