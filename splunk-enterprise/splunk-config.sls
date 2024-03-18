@@ -76,6 +76,8 @@ ini-add-general-section:
     - watch_in:
       - file: comment-general-pass4SymmKeyCheck-value
       - file: comment-general-sslPasswordCheck-value
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 
 # Comment out the pass4SymmKey hash check line
 comment-general-pass4SymmKeyCheck-value:
@@ -89,6 +91,8 @@ comment-general-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.pass4SymmKey | sha256 }}
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 
 # Comment out the sslPassword hash check line
 comment-general-sslPasswordCheck-value:

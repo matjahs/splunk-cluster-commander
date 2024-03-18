@@ -1,3 +1,6 @@
 *.deb
 *.rpm
 *.lic
+*.DS_Store
+.idea/
+.vscode/

@@ -10,8 +10,7 @@ user-manage-splunk:
     - shell: /bin/bash
     - home: {{ config.splunk.base_dir }}
     - createhome: False
-    - groups:
-      - splunk
+    - usergroup: True
     - optional_groups:
       - adm
       - syslog

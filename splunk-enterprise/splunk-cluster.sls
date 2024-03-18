@@ -21,6 +21,8 @@ ini-add-splunk-httpserver-section:
           max_content_length: '{{ config.splunk.httpserver_max_content_length }}'
     - onchanges_in:
       - grains: grains-set-restart-status
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 
 {% endif %}
 
@@ -96,6 +98,8 @@ ini-add-splunk-replicationSettings-section:
           maxBundleSize: '{{ config.splunk.distsearch_maxBundleSize }}'
     - onchanges_in:
       - grains: grains-set-restart-status
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/distsearch.conf
 
 # Add info for search heads in the clustering section
 ini-add-splunk-search-head-cluster-section:
@@ -118,6 +122,8 @@ ini-add-splunk-search-head-cluster-section:
       - grains: grains-set-restart-status
     - watch_in:
       - file: comment-sh-clustering-pass4SymmKeyCheck-value
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 
 # Comment out the pass4SymmKey hash check line
 comment-sh-clustering-pass4SymmKeyCheck-value:
@@ -131,7 +137,8 @@ comment-sh-clustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.cluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.cluster.pass4SymmKey | sha256 }}
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 # Add replication port to end of file
 add-sh-clustering-replication-port:
   file.replace:
@@ -142,9 +149,10 @@ add-sh-clustering-replication-port:
     - pattern: |
         ^[replication_port.*]$
     - repl: |
-        
-        [replication_port://{{ config.splunk.shcluster.replication_port }}]
 
+        [replication_port://{{ config.splunk.shcluster.replication_port }}]
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% if config.splunk.shcluster.use_shcluster == 'True' %}
 # Add info for search heads in the shclustering section
 ini-add-splunk-search-head-shcluster-section:
@@ -168,7 +176,8 @@ ini-add-splunk-search-head-shcluster-section:
       - grains: grains-set-restart-status
     - watch_in:
       - file: comment-sh-shclustering-pass4SymmKeyCheck-value
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 # Comment out the pass4SymmKey hash check line
 comment-sh-shclustering-pass4SymmKeyCheck-value:
   file.replace:
@@ -181,7 +190,8 @@ comment-sh-shclustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.shcluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.shcluster.pass4SymmKey | sha256 }}
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% endif %}
 {% endif %}
 
@@ -213,7 +223,8 @@ ini-add-splunk-indexer-sections:
       - grains: grains-set-restart-status
     - watch_in:
       - file: comment-idx-clustering-pass4SymmKeyCheck-value
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 # Comment out the pass4SymmKey hash check line
 comment-idx-clustering-pass4SymmKeyCheck-value:
   file.replace:
@@ -226,7 +237,8 @@ comment-idx-clustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.cluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.cluster.pass4SymmKey | sha256 }}
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 # Add replication port to end of file
 add-idx-clustering-replication-port:
   file.replace:
@@ -237,9 +249,10 @@ add-idx-clustering-replication-port:
     - pattern: |
         ^[replication_port.*]$
     - repl: |
-        
-        [replication_port://{{ config.splunk.cluster.replication_port }}]
 
+        [replication_port://{{ config.splunk.cluster.replication_port }}]
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% endif %}
 
 ###########################################
@@ -293,7 +306,8 @@ ini-add-splunk-cm-clustering-section:
       - grains: grains-set-restart-status
     - watch_in:
       - file: comment-cm-clustering-pass4SymmKeyCheck-value
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 # Comment out the pass4SymmKey hash check line
 comment-cm-clustering-pass4SymmKeyCheck-value:
   file.replace:
@@ -306,7 +320,8 @@ comment-cm-clustering-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.cluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.cluster.pass4SymmKey | sha256 }}
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% endif %}
 
 ###########################################
@@ -343,7 +358,8 @@ ini-add-splunk-ds-deployer-shcluster-section:
       - grains: grains-set-restart-status
     - watch_in:
       - file: comment-ds-deployer-pass4SymmKeyCheck-value
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 # Comment out the pass4SymmKeyCheck hash check line
 comment-ds-deployer-pass4SymmKeyCheck-value:
   file.replace:
@@ -356,7 +372,8 @@ comment-ds-deployer-pass4SymmKeyCheck-value:
     - repl: |
         pass4SymmKey = {{ config.splunk.shcluster.pass4SymmKey }}
         #pass4SymmKeyCheck = {{ config.splunk.shcluster.pass4SymmKey | sha256 }}
-
+    - require:
+      - file: {{ config.splunk.base_dir }}/etc/system/local/server.conf
 {% endif %}
 {% endif %}
 
